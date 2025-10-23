@@ -102,30 +102,11 @@ export default function Service() {
               <div className="services-7-content">
                 <div className="services-7-image">
                   <Image
-                    src="/assets/images/demo-gradient/services/service-1.png"
+                    src="/assets/images/demo-elegant/services/service-1.jpg"
                     width={1000}
                     height={790}
                     alt="Image Description"
                   />
-                </div>
-                <div className="small text-gray text-center mt-3">
-                  Illustration by{" "}
-                  <a
-                    href="https://icons8.com/illustrations/author/CkHJmwURlxnt"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Olha Khomich{" "}
-                  </a>
-                  from{" "}
-                  <a
-                    href="https://icons8.com/illustrations"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Ouch
-                  </a>
-                  !
                 </div>
               </div>
             </div>
@@ -139,30 +120,11 @@ export default function Service() {
               <div className="services-7-content">
                 <div className="services-7-image">
                   <Image
-                    src="/assets/images/demo-gradient/services/service-2.png"
+                    src="/assets/images/demo-elegant/services/service-2.jpg"
                     alt="Image Description"
                     width={1000}
                     height={790}
                   />
-                </div>
-                <div className="small text-gray text-center mt-3">
-                  Illustration by{" "}
-                  <a
-                    href="https://icons8.com/illustrations/author/CkHJmwURlxnt"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Olha Khomich{" "}
-                  </a>
-                  from{" "}
-                  <a
-                    href="https://icons8.com/illustrations"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Ouch
-                  </a>
-                  !
                 </div>
               </div>
             </div>
@@ -176,30 +138,11 @@ export default function Service() {
               <div className="services-7-content">
                 <div className="services-7-image">
                   <Image
-                    src="/assets/images/demo-gradient/services/service-3.png"
+                    src="/assets/images/demo-elegant/services/service-3.jpg"
                     alt="Image Description"
                     width={1000}
                     height={790}
                   />
-                </div>
-                <div className="small text-gray text-center mt-3">
-                  Illustration by{" "}
-                  <a
-                    href="https://icons8.com/illustrations/author/CkHJmwURlxnt"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Olha Khomich{" "}
-                  </a>
-                  from{" "}
-                  <a
-                    href="https://icons8.com/illustrations"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Ouch
-                  </a>
-                  !
                 </div>
               </div>
             </div>
@@ -213,30 +156,11 @@ export default function Service() {
               <div className="services-7-content">
                 <div className="services-7-image">
                   <Image
-                    src="/assets/images/demo-gradient/services/service-4.png"
+                    src="/assets/images/demo-elegant/services/service-4.jpg"
                     alt="Image Description"
                     width={1000}
                     height={790}
                   />
-                </div>
-                <div className="small text-gray text-center mt-3">
-                  Illustration by{" "}
-                  <a
-                    href="https://icons8.com/illustrations/author/CkHJmwURlxnt"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Olha Khomich{" "}
-                  </a>
-                  from{" "}
-                  <a
-                    href="https://icons8.com/illustrations"
-                    rel="noopener nofollow"
-                    target="_blank"
-                  >
-                    Ouch
-                  </a>
-                  !
                 </div>
               </div>
             </div>
