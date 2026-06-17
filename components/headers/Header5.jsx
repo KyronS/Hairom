@@ -3,14 +3,14 @@ import { toggleMobileMenu } from "@/utlis/toggleMobileMenu";
 import Nav from "./components/Nav";
 
 import Image from "next/image";
-export default function Header5({ links }) {
+export default function Header5({ links, logoHref = "#top" }) {
   return (
     <div className="main-nav-sub full-wrapper">
-      {/* Logo  (* Add your text or image to the link tag. Use SVG or PNG image format. 
+      {/* Logo  (* Add your text or image to the link tag. Use SVG or PNG image format.
               If you use a PNG logo image, the image resolution must be equal 200% of the visible logo
               image size for support of retina screens. See details in the template documentation. *) */}
       <div className="nav-logo-wrap local-scroll">
-        <a href="#top" className="logo font-alt">
+        <a href={logoHref} className="logo font-alt">
           <Image
             src="/assets/images/demo-elegant/logo-white.svg"
             alt="Your Company Logo"
@@ -36,9 +36,8 @@ export default function Header5({ links }) {
           <li className="ms-3 me-2" />
           <li>
             <a
-              href="https://moriahhowellpaul.setmore.com/"
+              href="/booking"
               className="opacity-1 no-hover"
-              target="_blank"
             >
               <span
                 className="btn btn-mod btn-small btn-border-w btn-circle"

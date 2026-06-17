@@ -2,6 +2,26 @@
 import { contactItems } from "@/data/contact";
 import React from "react";
 
+const BARBER_WHATSAPP = process.env.NEXT_PUBLIC_BARBER_WHATSAPP_NUMBER || "18683755357";
+
+function handleContactSubmit(e) {
+  e.preventDefault();
+  const form    = e.currentTarget;
+  const name    = form.elements["name"].value.trim();
+  const email   = form.elements["email"].value.trim();
+  const message = form.elements["message"].value.trim();
+
+  const text = encodeURIComponent(
+    `Hi Hairom!\n\n` +
+    `Name: ${name}\n` +
+    `Email: ${email}\n\n` +
+    `Message:\n${message}`
+  );
+
+  window.open(`https://wa.me/${BARBER_WHATSAPP}?text=${text}`, "_blank");
+  form.reset();
+}
+
 export default function Contact() {
   return (
     <div className="container">
@@ -40,7 +60,7 @@ export default function Contact() {
       <div className="row">
         <div className="col-md-10 offset-md-1">
           <form
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleContactSubmit}
             className="form contact-form wow fadeInUp wch-unset"
             data-wow-delay=".5s"
             id="contact_form"
@@ -88,6 +108,7 @@ export default function Contact() {
                 className="input-lg round form-control"
                 style={{ height: 130 }}
                 placeholder="Enter your message"
+                required
                 defaultValue={""}
               />
             </div>
@@ -112,7 +133,7 @@ export default function Contact() {
                     data-link-animate="y"
                   >
                     <span className="link-strong link-strong-unhovered">
-                      Send Message
+                      Send via WhatsApp
                       <i
                         className="mi-arrow-right size-18 align-middle"
                         aria-hidden="true"
@@ -122,7 +143,7 @@ export default function Contact() {
                       className="link-strong link-strong-hovered"
                       aria-hidden="true"
                     >
-                      Send Message
+                      Send via WhatsApp
                       <i
                         className="mi-arrow-right size-18 align-middle"
                         aria-hidden="true"
