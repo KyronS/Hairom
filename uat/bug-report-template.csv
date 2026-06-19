@@ -1,0 +1,2 @@
+ID,Summary,Component/Page,URL,Steps to Reproduce,Expected Result,Actual Result,Severity,Priority,Device,OS,Browser+Version,Screen Size,Screenshot URL,Reporter,Date,Status,Notes
+1,Booking fails on confirm,Booking page,https://hairom.vercel.app/booking,"1) Select date\n2) Choose slot\n3) Submit",Booking confirmation page shows,Error 500 on submit,Critical,High,Desktop,Windows 11,Chrome 124,1920x1080,https://example.com/screenshot.png,Kyron,2026-06-19,Open,Server error in logs

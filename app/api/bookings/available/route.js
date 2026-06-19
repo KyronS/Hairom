@@ -33,17 +33,19 @@ export async function GET(request) {
     return NextResponse.json({ error: "Invalid serviceId." }, { status: 400 });
   }
 
-  const [y, mo, d] = dateStr.split("-").map(Number);
-  const requestedDate = new Date(y, mo - 1, d);
-  const todayLocal    = new Date();
-  todayLocal.setHours(0, 0, 0, 0);
+  // Trinidad is UTC-4 year-round (no DST)
+  const TRINIDAD_OFFSET_MS = 4 * 60 * 60 * 1000;
+  const nowTrinidad = new Date(Date.now() - TRINIDAD_OFFSET_MS);
+  const todayStr    = nowTrinidad.toISOString().slice(0, 10);
 
-  if (requestedDate < todayLocal) {
+  if (dateStr < todayStr) {
     return NextResponse.json({
       slots: [], date: dateStr, serviceId, duration: service.duration,
     });
   }
 
+  const [y, mo, d] = dateStr.split("-").map(Number);
+  const requestedDate = new Date(y, mo - 1, d);
   const dayOfWeek = requestedDate.getDay();
 
   const [hoursRow, blocked, existingBookings] = await Promise.all([
@@ -61,7 +63,13 @@ export async function GET(request) {
   const openMinutes  = timeToMinutes(hoursRow.open_time.substring(0, 5));
   const closeMinutes = timeToMinutes(hoursRow.close_time.substring(0, 5));
   const candidates   = generateCandidateSlots(service.duration, openMinutes, closeMinutes);
-  const available    = filterAvailableSlots(candidates, service.duration, existingBookings);
+  let available      = filterAvailableSlots(candidates, service.duration, existingBookings);
+
+  // For today, remove slots that have already passed (with 30-min booking buffer)
+  if (dateStr === todayStr) {
+    const nowMinutes = nowTrinidad.getUTCHours() * 60 + nowTrinidad.getUTCMinutes() + 30;
+    available = available.filter((slot) => timeToMinutes(slot) >= nowMinutes);
+  }
 
   return NextResponse.json({
     slots:     available,

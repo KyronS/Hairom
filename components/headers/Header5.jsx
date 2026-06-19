@@ -1,5 +1,5 @@
 "use client";
-import { toggleMobileMenu } from "@/utlis/toggleMobileMenu";
+import { toggleMobileMenu } from "@/utils/toggleMobileMenu";
 import Nav from "./components/Nav";
 
 import Image from "next/image";

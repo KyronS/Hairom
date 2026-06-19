@@ -1,19 +1,9 @@
 import { NextResponse } from "next/server";
 import { findAndCancelBooking } from "@/lib/googleSheets";
+import { isAdminAuthed, unauthorizedJson } from "@/lib/requireAdminAuth";
 
-/**
- * PATCH /api/bookings/{uuid}
- * Body: { action: "cancel" }
- *
- * Cancels a confirmed booking. Used by the admin dashboard.
- *
- * Response 200: { id, status: "cancelled" }
- * Response 400: { error } — invalid ID or body
- * Response 404: { error } — booking not found
- * Response 409: { error } — already cancelled
- * Response 500: { error } — sheet error
- */
 export async function PATCH(request, { params }) {
+  if (!isAdminAuthed(request)) return unauthorizedJson();
   const { id } = params;
 
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {

@@ -1,57 +1,27 @@
-export const footerLinks = [
-  { name: "Privacy Policy", path: "#" },
-  { name: "Terms & Conditions", path: "#" },
-  { name: "Presskit", path: "#" },
-];
-
-export const footerLinks2 = [
-  { text: "Privacy Policy", href: "#" },
-  { text: "Terms & Conditions", href: "#" },
-  { text: "Presskit", href: "#" },
-  { text: "Credits", href: "#" },
-];
-
-export const socialLinks = [
-  {
-    href: "#",
-    text: "Instagram",
-  },
-  {
-    href: "#",
-    text: "Facebook",
-  },
-  {
-    href: "#",
-    text: "YouTube",
-  },
-  {
-    href: "#",
-    text: "LinkedIn",
-  },
-];
-
+// ── Replace the href "#" values with real social URLs from the client ─────────
 export const socialMediaLinks = [
   {
-    href: "#",
+    href: "#", // TODO: replace with real Facebook URL
     title: "Facebook",
     iconClass: "fa-facebook-f",
     name: "Facebook",
   },
-  { href: "#", title: "Skype", iconClass: "fa-skype", name: "Skype" },
   {
-    href: "#",
-    title: "Pinterest",
-    iconClass: "fa-pinterest",
-    name: "Pinterest",
+    href: "#", // TODO: replace with real Instagram URL
+    title: "Instagram",
+    iconClass: "fa-instagram",
+    name: "Instagram",
   },
-  { href: "#", title: "Behance", iconClass: "fa-behance", name: "Behance" },
-  { href: "#", title: "Dribbble", iconClass: "fa-dribbble", name: "Dribbble" },
-];
-
-export const navigationLinks = [
-  { href: "#about", text: "About" },
-  { href: "#services", text: "Services" },
-  { href: "#portfolio", text: "Portfolio" },
-  { href: "#blog", text: "Blog" },
-  { href: "#contact", text: "Contact" },
+  {
+    href: "#", // TODO: replace with real WhatsApp URL e.g. https://wa.me/18683755357
+    title: "WhatsApp",
+    iconClass: "fa-whatsapp",
+    name: "WhatsApp",
+  },
+  {
+    href: "#", // TODO: replace with real TikTok URL (if applicable)
+    title: "TikTok",
+    iconClass: "fa-tiktok",
+    name: "TikTok",
+  },
 ];

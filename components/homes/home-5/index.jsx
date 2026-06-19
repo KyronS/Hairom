@@ -1,12 +1,8 @@
 import React from "react";
 import About from "./About";
 import Marquee from "./Marquee";
-import Image from "next/image";
-import Team from "./Team";
 import Service from "../home-7/Service";
 import Portfolio from "./Portfolio";
-import Blog from "./Blog";
-import NewsLetter from "./NewsLetter";
 import Contact from "./Contact";
 import Link from "next/link";
 import MarqueeDark from "./MarqueeDark";
@@ -26,7 +22,7 @@ export default function Home5({ onePage = true, dark = false }) {
               <div>
                 <div className="wow linesAnimIn" data-splitting="lines">
                   <h2 className="section-title mb-30 mb-sm-20">
-                    <span className="text-gray">About</span> Studio
+                    <span className="text-gray">About</span> Hairom
                     <span className="text-gray">.</span>
                   </h2>
                   <div className="text-gray mb-30 mb-sm-20">
@@ -278,7 +274,7 @@ export default function Home5({ onePage = true, dark = false }) {
           <div className="row mb-n10">
             <div className="col-md-6 offset-md-1 col-lg-5 offset-lg-2 mb-sm-30 text-center text-md-start">
               <h2 className="section-title-small mb-0">
-                Like our creative works?
+                Like what you see?
               </h2>
             </div>
             <div className="col-md-4 col-lg-3 text-center text-md-end">

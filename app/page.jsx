@@ -3,18 +3,18 @@ import Header5 from "@/components/headers/Header5";
 import Home5 from "@/components/homes/home-5";
 import Hero1 from "@/components/homes/home-5/heros/Hero1";
 import { elegantOnepage } from "@/data/menu";
+import { BUSINESS_TITLE } from "@/lib/config";
 import dynamic from "next/dynamic";
 const ParallaxContainer = dynamic(
   () => import("@/components/common/ParallaxContainer"),
   {
-    ssr: false, // Disable server-side rendering
+    ssr: false,
   }
 );
 export const metadata = {
-  title:
-    "Hairom",
+  title: BUSINESS_TITLE,
   description:
-    "Hairom &mdash;  A modern, elegant, and responsive one-page website template for salons, spas, and beauty services.",
+    "Hairom — San Fernando's premier mobile barbershop and loctician studio. Haircuts, locs, natural hairstyles, and hair dye. Book online. Crown Adjusted Successfully.",
 };
 export default function Home5MainDemoOnepage() {
   return (

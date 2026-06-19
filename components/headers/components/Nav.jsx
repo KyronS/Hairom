@@ -1,9 +1,9 @@
 "use client";
 
-import addScrollspy from "@/utlis/addScrollSpy";
-import { init_classic_menu_resize } from "@/utlis/menuToggle";
-import { scrollToElement } from "@/utlis/scrollToElement";
-import { closeMobileMenu } from "@/utlis/toggleMobileMenu";
+import addScrollspy from "@/utils/addScrollSpy";
+import { init_classic_menu_resize } from "@/utils/menuToggle";
+import { scrollToElement } from "@/utils/scrollToElement";
+import { closeMobileMenu } from "@/utils/toggleMobileMenu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";

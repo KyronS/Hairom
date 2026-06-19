@@ -17,7 +17,7 @@ export default function Footer5() {
           <a
             href={elm.href}
             key={i}
-            title="Facebook"
+            title={elm.title}
             rel="noopener nofollow"
             target="_blank"
           >
@@ -30,14 +30,9 @@ export default function Footer5() {
       {/* Footer Text */}
       <div className="footer-text">
         {/* Copyright */}
-        <div>
-          <a href="https://themeforest.net/user/ib-themes/portfolio">
-            © IB-Themes {new Date().getFullYear()}
-          </a>
-          .
-        </div>
+        <div>© Hairom Barbershop {new Date().getFullYear()}</div>
         {/* End Copyright */}
-        <div className="footer-made">Made with love for great people.</div>
+        <div className="footer-made">Crown Adjusted Successfully.</div>
       </div>
       {/* End Footer Text */}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { init_classic_menu_resize } from "@/utlis/menuToggle";
-import { scrollToElement } from "@/utlis/scrollToElement";
+import { init_classic_menu_resize } from "@/utils/menuToggle";
+import { scrollToElement } from "@/utils/scrollToElement";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";

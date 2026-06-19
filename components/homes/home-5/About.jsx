@@ -14,10 +14,10 @@ export default function About() {
             <div className="spot-box-icon float-end ms-3" />
             <div className="spot-box-text text-end">
               <span className="text-gray">
-                We've helped more <br />
-                than
+                Serving clients <br />
+                since
               </span>
-              90 brands.
+              2015.
             </div>
           </div>
           <Image
@@ -45,10 +45,10 @@ export default function About() {
             <div className="spot-box-icon float-start me-3" />
             <div className="spot-box-text">
               <span className="text-gray">
-                We design interfaces <br />
-                for over
+                Happy clients <br />
+                &amp; counting —&nbsp;
               </span>
-              10 years.
+              500+
             </div>
           </div>
         </div>

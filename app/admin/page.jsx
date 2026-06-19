@@ -1,6 +1,7 @@
 // Server Component — no "use client" directive
 import { revalidatePath } from "next/cache";
 import { findAndCancelBooking, getAllBookings, getAdminStats } from "@/lib/googleSheets";
+import { BUSINESS_NAME } from "@/lib/config";
 import { formatTime12h, formatDateLong } from "@/lib/bookingUtils";
 import Header5 from "@/components/headers/Header5";
 
@@ -59,7 +60,7 @@ export default async function AdminPage({ searchParams }) {
               {/* ── Page heading ── */}
               <div style={{ marginBottom: 48 }}>
                 <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
-                  Hairom Barbershop
+                  {BUSINESS_NAME}
                 </p>
                 <h1 className="font-alt" style={{ fontSize: "2rem", fontWeight: 300, color: "#fff", marginBottom: 20 }}>
                   Admin Dashboard

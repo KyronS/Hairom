@@ -9,6 +9,7 @@ import {
   formatDateLong,
   toDateStr,
 } from "@/lib/bookingUtils";
+import { BUSINESS_NAME } from "@/lib/config";
 
 const WHATSAPP_NUMBER        = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER        || "18683755357";
 const BARBER_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_BARBER_WHATSAPP_NUMBER || WHATSAPP_NUMBER;
@@ -131,14 +132,14 @@ export default function BookingPage() {
   // Step 4 — success
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Set page title client-side (layout.js is "use client" so metadata API cannot be used)
-  useEffect(() => { document.title = "Book — Hairom"; }, []);
 
   // ── Calendar helpers ─────────────────────────────────────────────────────────
   const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth     = new Date(calYear, calMonth + 1, 0).getDate();
 
   function prevMonth() {
+    const atFloor = calYear === todayMidnight.getFullYear() && calMonth === todayMidnight.getMonth();
+    if (atFloor) return;
     if (calMonth === 0) { setCalYear(y => y - 1); setCalMonth(11); }
     else setCalMonth(m => m - 1);
   }
@@ -295,7 +296,7 @@ export default function BookingPage() {
               {/* ── Page heading ── */}
               <div className="text-center" style={{ marginBottom: 56 }}>
                 <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
-                  Hairom Barbershop
+                  {BUSINESS_NAME}
                 </p>
                 <h1 className="font-alt" style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 300, color: "#fff", marginBottom: 12 }}>
                   Book an Appointment

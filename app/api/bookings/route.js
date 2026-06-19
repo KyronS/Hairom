@@ -16,6 +16,15 @@ import {
   formatTime12h,
   formatDateLong,
 } from "@/lib/bookingUtils";
+import { BUSINESS_NAME } from "@/lib/config";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { isAdminAuthed, unauthorizedJson } from "@/lib/requireAdminAuth";
+
+// Trinidad is UTC-4 year-round (no DST)
+const TRINIDAD_OFFSET_MS = 4 * 60 * 60 * 1000;
+function todayInTrinidad() {
+  return new Date(Date.now() - TRINIDAD_OFFSET_MS).toISOString().slice(0, 10);
+}
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -32,6 +41,15 @@ const transporter = nodemailer.createTransport({
 
 // ── POST: Create a new booking ─────────────────────────────────────────────────
 export async function POST(request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const allowed = await checkRateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      { status: 429 }
+    );
+  }
+
   let body;
   try {
     body = await request.json();
@@ -53,13 +71,11 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid time. Use HH:MM (24h)." }, { status: 400 });
   }
 
-  const [dy, dmo, dd] = date.split("-").map(Number);
-  const requestedDate = new Date(dy, dmo - 1, dd);
-  const todayLocal    = new Date();
-  todayLocal.setHours(0, 0, 0, 0);
-  if (requestedDate < todayLocal) {
+  if (date < todayInTrinidad()) {
     return NextResponse.json({ error: "Selected date is in the past." }, { status: 400 });
   }
+  const [dy, dmo, dd] = date.split("-").map(Number);
+  const requestedDate = new Date(dy, dmo - 1, dd);
 
   if (!clientName?.trim()) {
     return NextResponse.json({ error: "Name is required." }, { status: 400 });
@@ -142,8 +158,10 @@ export async function POST(request) {
   }
 }
 
-// ── GET: List bookings (admin — protected by middleware) ──────────────────────
+// ── GET: List bookings (admin only) ──────────────────────────────────────────
 export async function GET(request) {
+  if (!isAdminAuthed(request)) return unauthorizedJson();
+
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get("status");
   const includePast  = searchParams.get("include_past") === "true";
@@ -161,13 +179,13 @@ async function sendEmails(booking) {
 
   await Promise.all([
     transporter.sendMail({
-      from:    `"Hairom Barbershop" <${process.env.GMAIL_USER}>`,
+      from:    `"${BUSINESS_NAME}" <${process.env.GMAIL_USER}>`,
       to:      booking.client_email,
       subject: `Appointment Confirmed — ${displayDate} at ${displayTime}`,
       html:    buildClientEmail({ booking, displayDate, displayTime, ref }),
     }),
     transporter.sendMail({
-      from:    `"Hairom Barbershop" <${process.env.GMAIL_USER}>`,
+      from:    `"${BUSINESS_NAME}" <${process.env.GMAIL_USER}>`,
       to:      process.env.BARBER_EMAIL,
       subject: `New Booking: ${booking.service_name} — ${displayDate} at ${displayTime}`,
       html:    buildBarberEmail({ booking, displayDate, displayTime, ref }),
@@ -201,7 +219,7 @@ function buildClientEmail({ booking, displayDate, displayTime, ref }) {
 </head>
 <body>
 <div class="wrap">
-  <p class="label">Hairom Barbershop</p>
+  <p class="label">${BUSINESS_NAME}</p>
   <h1>Your appointment is confirmed.</h1>
   <p class="sub">We look forward to seeing you, ${firstName}.</p>
   <hr>
@@ -217,7 +235,7 @@ function buildClientEmail({ booking, displayDate, displayTime, ref }) {
   </p>
   <a class="cta" href="https://wa.me/${waNumber}">Message Hairom</a>
   <div class="footer">
-    <p>Hairom Barbershop &mdash; Crown Adjusted Successfully</p>
+    <p>${BUSINESS_NAME} &mdash; Crown Adjusted Successfully</p>
     <p>Please arrive a few minutes early. If you need to cancel, please message us on WhatsApp as soon as possible.</p>
   </div>
 </div>
