@@ -6,6 +6,7 @@ import {
   getBookingsForDate,
   createBooking,
   getAllBookings,
+  getSettings,
 } from "@/lib/googleSheets";
 import { acquireLock, releaseLock } from "@/lib/bookingLock";
 import {
@@ -57,7 +58,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { serviceId, date, time, clientName, clientEmail, clientPhone } = body;
+  const { serviceId, date, time, clientName, clientEmail, clientPhone, houseCall } = body;
 
   // ── Input validation ─────────────────────────────────────────────────────────
   const service = SERVICES.find((s) => s.id === parseInt(serviceId, 10));
@@ -122,6 +123,19 @@ export async function POST(request) {
       );
     }
 
+    // ── Resolve house call fee from server settings (ignore client-supplied value) ──
+    let houseCallFee = 0;
+    if (houseCall === true) {
+      const settings = await getSettings();
+      if (settings.house_call_enabled !== "TRUE") {
+        return NextResponse.json(
+          { error: "House call bookings are not currently available." },
+          { status: 400 }
+        );
+      }
+      houseCallFee = Number(settings.house_call_price ?? 150) || 150;
+    }
+
     // ── Write the booking ──────────────────────────────────────────────────────
     const newBooking = await createBooking({
       service_id:       service.id,
@@ -133,6 +147,8 @@ export async function POST(request) {
       client_name:      clientName.trim(),
       client_email:     clientEmail.trim().toLowerCase(),
       client_phone:     clientPhone?.trim() || null,
+      house_call:       houseCall === true,
+      house_call_fee:   houseCallFee,
     });
 
     // ── Send emails (fire-and-forget — does not block the response) ────────────
@@ -150,6 +166,8 @@ export async function POST(request) {
         time:         newBooking.appointment_time,
         clientName:   newBooking.client_name,
         clientEmail:  newBooking.client_email,
+        houseCall:    newBooking.house_call,
+        houseCallFee: newBooking.house_call_fee,
       },
       { status: 201 }
     );
@@ -227,7 +245,9 @@ function buildClientEmail({ booking, displayDate, displayTime, ref }) {
   <div class="row"><span class="rl">Date</span><span class="rv">${displayDate}</span></div>
   <div class="row"><span class="rl">Time</span><span class="rv">${displayTime}</span></div>
   <div class="row"><span class="rl">Duration</span><span class="rv">${booking.duration_min} minutes</span></div>
-  <div class="row"><span class="rl">Price</span><span class="rv rv-large">$${booking.service_price}</span></div>
+  ${booking.house_call ? `<div class="row"><span class="rl">House Call</span><span class="rv">Yes</span></div>
+  <div class="row"><span class="rl">House Call Fee</span><span class="rv">$${booking.house_call_fee}</span></div>` : ""}
+  <div class="row"><span class="rl">Total</span><span class="rv rv-large">$${booking.service_price + (booking.house_call ? booking.house_call_fee : 0)}</span></div>
   <hr>
   <p class="ref">Booking reference: ${ref}</p>
   <p style="color:rgba(255,255,255,.35);font-size:13px;margin-top:28px;line-height:1.7">
@@ -270,7 +290,8 @@ function buildBarberEmail({ booking, displayDate, displayTime, ref }) {
   <div class="row"><span class="rl">Date</span><span class="rv">${displayDate}</span></div>
   <div class="row"><span class="rl">Time</span><span class="rv">${displayTime}</span></div>
   <div class="row"><span class="rl">Duration</span><span class="rv">${booking.duration_min} min</span></div>
-  <div class="row"><span class="rl">Price</span><span class="rv">$${booking.service_price}</span></div>
+  ${booking.house_call ? `<div class="row"><span class="rl">House Call</span><span class="rv">Yes (+$${booking.house_call_fee})</span></div>` : ""}
+  <div class="row"><span class="rl">Total</span><span class="rv">$${booking.service_price + (booking.house_call ? booking.house_call_fee : 0)}</span></div>
   <div class="row"><span class="rl">Reference</span><span class="rv" style="font-size:11px;opacity:.5">${ref}</span></div>
   <p class="note">Manage bookings at <a href="/admin" style="color:rgba(255,255,255,.45)">/admin</a></p>
 </div>

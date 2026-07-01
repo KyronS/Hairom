@@ -122,7 +122,7 @@ export default async function AdminPage({ searchParams }) {
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
-                        {["Ref", "Client", "Email", "Phone", "Service", "Date", "Time", "Price", "Status", "Booked", ""].map((col) => (
+                        {["Ref", "Client", "Email", "Phone", "Service", "House Call", "Date", "Time", "Total", "Status", "Booked", ""].map((col) => (
                           <th key={col} style={th}>{col}</th>
                         ))}
                       </tr>
@@ -148,9 +148,24 @@ export default async function AdminPage({ searchParams }) {
                             <td style={td}>{b.client_email}</td>
                             <td style={td}>{b.client_phone ?? "—"}</td>
                             <td style={{ ...td, whiteSpace: "nowrap" }}>{b.service_name}</td>
+                            <td style={td}>
+                              {b.house_call ? (
+                                <span style={{
+                                  padding: "2px 8px", borderRadius: 20, fontSize: 10,
+                                  letterSpacing: "0.08em", textTransform: "uppercase",
+                                  background: "rgba(120,170,255,0.1)",
+                                  color: "#88b8ff",
+                                  border: "1px solid rgba(120,170,255,0.25)",
+                                }}>
+                                  House Call
+                                </span>
+                              ) : (
+                                <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 11 }}>—</span>
+                              )}
+                            </td>
                             <td style={{ ...td, whiteSpace: "nowrap" }}>{dateShort}</td>
                             <td style={{ ...td, whiteSpace: "nowrap" }}>{timeDisplay}</td>
-                            <td style={td}>${b.service_price}</td>
+                            <td style={td}>${b.service_price + (b.house_call ? b.house_call_fee : 0)}</td>
                             <td style={td}>
                               <span style={{
                                 padding: "3px 10px",

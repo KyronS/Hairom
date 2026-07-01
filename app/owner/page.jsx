@@ -7,6 +7,8 @@ import {
   saveSchedule,
   addBlockedDate,
   removeBlockedDate,
+  getSettings,
+  updateSetting,
 } from "@/lib/googleSheets";
 import { formatTime12h, formatDateLong } from "@/lib/bookingUtils";
 import { BUSINESS_NAME } from "@/lib/config";
@@ -52,16 +54,32 @@ async function removeBlockedDateAction(formData) {
   revalidatePath("/owner");
 }
 
+// ── Server Action: save house call settings ──────────────────────────────────
+async function saveHouseCallSettingsAction(formData) {
+  "use server";
+  const enabled = formData.get("house_call_enabled") === "1";
+  const price   = Number(formData.get("house_call_price") ?? 150) || 150;
+  await Promise.all([
+    updateSetting("house_call_enabled", enabled ? "TRUE" : "FALSE"),
+    updateSetting("house_call_price",   String(price)),
+  ]);
+  revalidatePath("/owner");
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default async function OwnerPage() {
   const today          = new Date().toISOString().slice(0, 10);
   const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const [businessHours, blockedDates, allUpcoming] = await Promise.all([
+  const [businessHours, blockedDates, allUpcoming, settings] = await Promise.all([
     getBusinessHours(),
     getBlockedDates(),
     getAllBookings({ statusFilter: "confirmed", includePast: false }),
+    getSettings(),
   ]);
+
+  const houseCallEnabled = settings.house_call_enabled === "TRUE";
+  const houseCallPrice   = Number(settings.house_call_price ?? 150) || 150;
 
   const upcomingBookings = allUpcoming.filter(
     b => b.appointment_date >= today && b.appointment_date <= sevenDaysLater
@@ -159,7 +177,52 @@ export default async function OwnerPage() {
               </div>
 
               {/* ══════════════════════════════════════════════════════════════
-                  Section 1 — Weekly Schedule
+                  Section 1 — House Call Settings
+              ══════════════════════════════════════════════════════════════ */}
+              <div style={{ marginBottom: 64 }}>
+                <h2 style={sectionHeading}>House Call Settings</h2>
+
+                <form action={saveHouseCallSettingsAction} style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 440 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      name="house_call_enabled"
+                      value="1"
+                      defaultChecked={houseCallEnabled}
+                      style={{ width: 16, height: 16, accentColor: "#fff", cursor: "pointer" }}
+                    />
+                    <span style={{ color: "#fff", fontSize: 14 }}>Show house call option during booking</span>
+                  </label>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span style={label}>House Call Fee (TTD $)</span>
+                    <input
+                      type="number"
+                      name="house_call_price"
+                      defaultValue={houseCallPrice}
+                      min="0"
+                      step="5"
+                      required
+                      style={{ ...inputStyle, width: 160 }}
+                    />
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 2 }}>
+                      Added on top of the service price when a client books a house call.
+                    </span>
+                  </div>
+
+                  <div>
+                    <button type="submit" style={btnPrimary}>
+                      Save House Call Settings
+                    </button>
+                    <span style={{ marginLeft: 16, fontSize: 12, color: houseCallEnabled ? "#7ddb88" : "rgba(255,255,255,0.25)" }}>
+                      {houseCallEnabled ? `Enabled · $${houseCallPrice} fee` : "Disabled"}
+                    </span>
+                  </div>
+                </form>
+              </div>
+
+              {/* ══════════════════════════════════════════════════════════════
+                  Section 2 — Weekly Schedule
               ══════════════════════════════════════════════════════════════ */}
               <div style={{ marginBottom: 64 }}>
                 <h2 style={sectionHeading}>Weekly Schedule</h2>
@@ -313,7 +376,7 @@ export default async function OwnerPage() {
                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr>
-                          {["Client", "Service", "Date", "Time", "Price"].map((col) => (
+                          {["Client", "Service", "Date", "Time", "Total"].map((col) => (
                             <th key={col} style={th}>{col}</th>
                           ))}
                         </tr>
@@ -328,7 +391,7 @@ export default async function OwnerPage() {
                               <td style={{ ...td, whiteSpace: "nowrap" }}>{b.service_name}</td>
                               <td style={{ ...td, whiteSpace: "nowrap" }}>{dateShort}</td>
                               <td style={{ ...td, whiteSpace: "nowrap" }}>{timeDisplay}</td>
-                              <td style={td}>${b.service_price}</td>
+                              <td style={td}>${b.service_price + (b.house_call ? b.house_call_fee : 0)}</td>
                             </tr>
                           );
                         })}

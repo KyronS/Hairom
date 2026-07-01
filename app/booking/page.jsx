@@ -20,7 +20,7 @@ const MONTH_NAMES = [
 ];
 const DAY_ABBR = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
-const STEP_LABELS = ["Service", "Date & Time", "Your Details", "Confirmed"];
+const STEP_LABELS = ["Service", "House Call", "Date & Time", "Your Details", "Confirmed"];
 
 const bookingNav = [
   { href: "/",           text: "Home"      },
@@ -116,6 +116,16 @@ export default function BookingPage() {
       });
   }, []);
 
+  useEffect(() => {
+    fetch("/api/settings/house-call")
+      .then(r => r.json())
+      .then(data => {
+        setHouseCallEnabled(data.enabled ?? false);
+        setHouseCallFee(data.price ?? 150);
+      })
+      .catch(() => {});
+  }, []);
+
   // Step 2 — slots (fetched from API)
   const [selectedTime,   setSelectedTime]   = useState(null); // "HH:MM" 24h
   const [availableSlots, setAvailableSlots] = useState([]);   // "HH:MM" 24h
@@ -129,8 +139,13 @@ export default function BookingPage() {
   const [submitting,  setSubmitting]  = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
-  // Step 4 — success
+  // Step 5 — success
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  // House call (step 2) — enabled/price fetched from owner settings
+  const [houseCallEnabled, setHouseCallEnabled] = useState(false);
+  const [houseCallFee, setHouseCallFee] = useState(150);
+  const [houseCall, setHouseCall] = useState(false);
 
 
   // ── Calendar helpers ─────────────────────────────────────────────────────────
@@ -206,17 +221,18 @@ export default function BookingPage() {
           clientName:  clientName.trim(),
           clientEmail: clientEmail.trim(),
           clientPhone: clientPhone.trim() || undefined,
+          houseCall:   houseCall,
         }),
       });
 
       const data = await res.json();
 
       if (res.status === 409) {
-        // Slot was just taken — send back to Step 2 to re-select
+        // Slot was just taken — send back to Step 3 (date & time) to re-select
         setSelectedTime(null);
         setAvailableSlots([]);
         if (selectedDate && selectedService) fetchSlots(selectedDate, selectedService);
-        setStep(2);
+        setStep(3);
         setSlotsError(data.error || "That slot was just taken. Please choose another time.");
         return;
       }
@@ -227,7 +243,7 @@ export default function BookingPage() {
       }
 
       setConfirmedBooking(data);
-      setStep(4);
+      setStep(5);
 
       // Notify barber via WhatsApp (triggered synchronously during user action
       // so popup blockers allow it)
@@ -238,6 +254,7 @@ export default function BookingPage() {
         `Service: ${data.serviceName}\n` +
         `Date: ${formatDateLong(data.date)}\n` +
         `Time: ${formatTime12h(data.time)}\n` +
+        (data.houseCall ? `House Call: Yes (+$${data.houseCallFee})\n` : "") +
         `Ref: ${ref}`
       );
       window.open(`https://wa.me/${BARBER_WHATSAPP_NUMBER}?text=${text}`, "_blank");
@@ -257,7 +274,8 @@ export default function BookingPage() {
       `Reference: ${ref}\n` +
       `Service: ${confirmedBooking.serviceName}\n` +
       `Date: ${formatDateLong(confirmedBooking.date)}\n` +
-      `Time: ${formatTime12h(confirmedBooking.time)}`
+      `Time: ${formatTime12h(confirmedBooking.time)}` +
+      (confirmedBooking.houseCall ? `\nHouse Call: Yes (+$${confirmedBooking.houseCallFee})` : "")
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank");
   }
@@ -266,6 +284,7 @@ export default function BookingPage() {
   function resetAll() {
     setStep(1);
     setSelectedService(null);
+    setHouseCall(false);
     setSelectedDate(null);
     setSelectedTime(null);
     setAvailableSlots([]);
@@ -302,7 +321,7 @@ export default function BookingPage() {
                   Book an Appointment
                 </h1>
                 <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 0 }}>
-                  Three easy steps to schedule your visit
+                  Simple steps to schedule your visit
                 </p>
               </div>
 
@@ -333,7 +352,7 @@ export default function BookingPage() {
                           {label}
                         </span>
                       </div>
-                      {s < 4 && (
+                      {s < 5 && (
                         <div style={{
                           width: 60, height: 1, marginTop: 18, flexShrink: 0,
                           background: step > s ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.1)",
@@ -372,7 +391,7 @@ export default function BookingPage() {
 
                     <div className="text-center" style={{ marginTop: 56 }}>
                       <button
-                        onClick={() => setStep(2)}
+                        onClick={() => setStep(houseCallEnabled ? 2 : 3)}
                         disabled={!selectedService}
                         className="btn btn-mod btn-border-w btn-medium btn-circle"
                         style={{ opacity: selectedService ? 1 : 0.3, transition: "opacity 0.2s" }}
@@ -385,9 +404,51 @@ export default function BookingPage() {
               )}
 
               {/* ══════════════════════════════════════════════════════
-                  STEP 2 — Select Date & Time
+                  STEP 2 — House Call Option
               ══════════════════════════════════════════════════════ */}
               {step === 2 && (
+                <div className="row justify-content-center">
+                  <div className="col-12 col-xl-8">
+                    <div className="row g-4 justify-content-center">
+                      {[
+                        {
+                          value: false,
+                          title: "Salon Visit",
+                          desc: "Come to us at our San Fernando location. No extra charge.",
+                        },
+                        {
+                          value: true,
+                          title: "House Call",
+                          desc: `We come to you. An additional house call fee of $${houseCallFee} applies on top of the service price.`,
+                        },
+                      ].map(({ value, title, desc }) => (
+                        <div key={String(value)} className="col-12 col-sm-6 col-lg-5">
+                          <div onClick={() => setHouseCall(value)} style={cardStyle(houseCall === value)}>
+                            <h5 className="font-alt" style={{ fontWeight: 400, fontSize: 17, color: "#fff", marginBottom: 12 }}>
+                              {title}
+                            </h5>
+                            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>{desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="text-center" style={{ marginTop: 56 }}>
+                      <button onClick={() => setStep(1)} className="btn btn-mod btn-border btn-medium btn-circle" style={{ marginRight: 12 }}>
+                        Back
+                      </button>
+                      <button onClick={() => setStep(3)} className="btn btn-mod btn-border-w btn-medium btn-circle">
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ══════════════════════════════════════════════════════
+                  STEP 3 — Select Date & Time
+              ══════════════════════════════════════════════════════ */}
+              {step === 3 && (
                 <div className="row g-5 justify-content-center">
 
                   {/* Calendar */}
@@ -504,11 +565,11 @@ export default function BookingPage() {
 
                   {/* Step navigation */}
                   <div className="col-12 text-center" style={{ marginTop: 8 }}>
-                    <button onClick={() => setStep(1)} className="btn btn-mod btn-border btn-medium btn-circle" style={{ marginRight: 12 }}>
+                    <button onClick={() => setStep(houseCallEnabled ? 2 : 1)} className="btn btn-mod btn-border btn-medium btn-circle" style={{ marginRight: 12 }}>
                       Back
                     </button>
                     <button
-                      onClick={() => setStep(3)}
+                      onClick={() => setStep(4)}
                       disabled={!selectedDate || !selectedTime}
                       className="btn btn-mod btn-border-w btn-medium btn-circle"
                       style={{ opacity: selectedDate && selectedTime ? 1 : 0.3, transition: "opacity 0.2s" }}
@@ -520,9 +581,9 @@ export default function BookingPage() {
               )}
 
               {/* ══════════════════════════════════════════════════════
-                  STEP 3 — Client Info
+                  STEP 4 — Client Info
               ══════════════════════════════════════════════════════ */}
-              {step === 3 && selectedSvc && (
+              {step === 4 && selectedSvc && (
                 <div className="row justify-content-center">
                   <div className="col-12 col-md-8 col-lg-5">
 
@@ -532,6 +593,18 @@ export default function BookingPage() {
                         <span style={{ color: "#fff", fontSize: 14 }}>{selectedSvc.name}</span>
                         <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>${selectedSvc.price}</span>
                       </div>
+                      {houseCall && (
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>House Call Fee</span>
+                          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>+${houseCallFee}</span>
+                        </div>
+                      )}
+                      {houseCall && (
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                          <span style={{ color: "#fff", fontSize: 13 }}>Total</span>
+                          <span style={{ color: "#fff", fontSize: 13, fontWeight: 400 }}>${selectedSvc.price + houseCallFee}</span>
+                        </div>
+                      )}
                       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0 }}>
                         {formatDateLong(toDateStr(selectedDate))} &middot; {formatTime12h(selectedTime)}
                       </p>
@@ -597,7 +670,7 @@ export default function BookingPage() {
 
                     <div className="text-center" style={{ marginTop: 20 }}>
                       <button
-                        onClick={() => setStep(2)}
+                        onClick={() => setStep(3)}
                         style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 12, letterSpacing: "0.04em" }}
                       >
                         &#8592; Change date or time
@@ -608,9 +681,9 @@ export default function BookingPage() {
               )}
 
               {/* ══════════════════════════════════════════════════════
-                  STEP 4 — Success / Confirmed
+                  STEP 5 — Success / Confirmed
               ══════════════════════════════════════════════════════ */}
-              {step === 4 && confirmedBooking && (
+              {step === 5 && confirmedBooking && (
                 <div className="row justify-content-center">
                   <div className="col-12 col-md-8 col-lg-5">
                     <div style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, padding: "48px 40px" }}>
@@ -630,7 +703,14 @@ export default function BookingPage() {
                         <Row label="Date"     value={formatDateLong(confirmedBooking.date)} />
                         <Row label="Time"     value={formatTime12h(confirmedBooking.time)} />
                         <Row label="Duration" value={`${confirmedBooking.duration} min`} />
-                        <Row label="Price"    value={`$${confirmedBooking.servicePrice}`} large />
+                        {confirmedBooking.houseCall && (
+                          <Row label="House Call Fee" value={`+$${confirmedBooking.houseCallFee}`} />
+                        )}
+                        <Row
+                          label="Total"
+                          value={`$${confirmedBooking.servicePrice + (confirmedBooking.houseCall ? confirmedBooking.houseCallFee : 0)}`}
+                          large
+                        />
                       </div>
 
                       <p style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.22)", marginBottom: 32 }}>
